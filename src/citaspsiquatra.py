@@ -1,5 +1,11 @@
+import redis
 import requests
 import re
+from datetime import datetime
+
+# Conexión a Redis
+r = redis.Redis(host='localhost', port=6379, db=0)
+
 
 def obtener_citas(id_centros):
     url = 'https://citahos.sanidadmadrid.org/webae/MostrarCitasDisponibleAction.do?1748705253879'
@@ -22,15 +28,17 @@ def obtener_citas(id_centros):
         'sec-ch-ua-platform': '"Windows"'
     }
     cookies = {
-        'AlteonP': 'BC84QiRMHaz1XT13N1QVCw$$',
+        'AlteonP': 'BFHUJSRMHazpZi5btZFpXw$$',
         '_pk_id.100.f94c': 'd2f479315072abc7.1748543534.1.1748543553.1748543534.',
-        '_pk_ref..f94c': '%5B%22%22%2C%22%22%2C1748618904%2C%22https%3A%2F%2Fwww.comunidad.madrid%2F%22%5D',
-        '_pk_id..f94c': '7dfcc3445ed37b3b.1748237895.5.1748618904.1748546444.',
-        '_pk_ref.undefined.f94c': '%5B%22%22%2C%22%22%2C1748618904%2C%22https%3A%2F%2Fwww.comunidad.madrid%2F%22%5D',
-        '_pk_id.undefined.f94c': '7dfcc3445ed37b3b.1748237895.5.1748618904.1748546444.',
-        'JSESSIONID': 'NN4m85R-93rJAlh9KeLpvgwG82l2q8-tfhbNLlML4T1HNcybhBAN!-1403265650'
+        'JSESSIONID': 'G4Yq8O2wth-eqnYGkKdmPC8pIvZ67d4HNicj-9gaau0V_vFCwoXd!-1403265650',
+        '_pk_ref..f94c': '%5B%22%22%2C%22%22%2C1748772122%2C%22https%3A%2F%2Fwww.comunidad.madrid%2F%22%5D',
+        '_pk_id..f94c': '7dfcc3445ed37b3b.1748237895.7.1748772122.1748768425.',
+        '_pk_ses..f94c': '*',
+        '_pk_ref.undefined.f94c': '%5B%22%22%2C%22%22%2C1748772122%2C%22https%3A%2F%2Fwww.comunidad.madrid%2F%22%5D',
+        '_pk_id.undefined.f94c': '7dfcc3445ed37b3b.1748237895.7.1748772122.1748768425.',
+        '_pk_ses.undefined.f94c': '*'
     }
-    
+
     resultados = []
     for id_centro in id_centros:
         data = {'ID_CENTRO': id_centro}
@@ -48,6 +56,27 @@ def filtrar_citas(texto):
         texto, re.IGNORECASE
     )
     return citas
+
+def ordenar_citas():
+    todas_citas = []
+    for key in r.keys('citas:*'):
+        citas = r.lrange(key, 0, -1)  # Obtener todas las citas de la lista
+        for cita in citas:
+            try:
+                # Intentar dividir la cita en sus componentes
+                dia, fecha_hora, hospital = cita.decode('utf-8').split(' - ')
+                fecha_hora_obj = datetime.strptime(fecha_hora, "%d %B %Y %H:%M horas")
+                todas_citas.append((fecha_hora_obj, dia, hospital))
+            except ValueError:
+                print(f"Error al procesar la cita: {cita.decode('utf-8')}")
+    
+    # Ordenar las citas por fecha y hora
+    todas_citas.sort(key=lambda x: x[0])
+    
+    # Mostrar las citas ordenadas
+    print("\nCitas ordenadas de menor a mayor:")
+    for fecha_hora_obj, dia, hospital in todas_citas:
+        print(f"{dia}, {fecha_hora_obj.strftime('%d %B %Y %H:%M')} - {hospital}")
 
 centros = {
     2552: "HOSPITAL FUNDACION JIMENEZ DIAZ",
@@ -90,5 +119,11 @@ for idx, cita in enumerate(citas):
     citas_filtradas = filtrar_citas(cita)
     if citas_filtradas:
         for dia, fecha, hora in citas_filtradas:
-            print(f"{dia.capitalize()}, {fecha} {hora} horas - {centros[id_centros[idx]]}")
+            redis_key = f"citas:{id_centros[idx]}"
+            redis_value = f"{dia.capitalize()}, {fecha} {hora} horas - {centros[id_centros[idx]]}"
+            r.rpush(redis_key, redis_value)  # Guardar en Redis
+            print(redis_value)
         print()
+
+# Ejecutar el proceso de ordenamiento
+# ordenar_citas()
