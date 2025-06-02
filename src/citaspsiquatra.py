@@ -2,6 +2,7 @@ import redis
 import requests
 import re
 from datetime import datetime
+import csv
 
 # Conexión a Redis
 r = redis.Redis(host='localhost', port=6379, db=0)
@@ -110,6 +111,9 @@ for id_centro in id_centros:
 print("Las primeras citas disponibles para su solicitud de Psiquiatría")
 print("En los centros elegidos\n")
 
+# Almacenar las citas en una lista para luego escribirlas en el CSV
+citas_para_csv = []
+
 for idx, cita in enumerate(citas):
     citas_filtradas = filtrar_citas(cita)
     if citas_filtradas:
@@ -118,7 +122,22 @@ for idx, cita in enumerate(citas):
             redis_value = f"{dia.capitalize()}, {fecha} {hora} horas - {centros[id_centros[idx]]}"
             r.rpush(redis_key, redis_value)  # Guardar en Redis
             print(redis_value)
+            # Guardar también para el CSV
+            citas_para_csv.append({
+                'dia': dia.capitalize(),
+                'fecha': fecha,
+                'hora': hora,
+                'hospital': centros[id_centros[idx]]
+            })
         print()
+
+# Guardar todas las citas en un archivo CSV
+with open('citas_guardadas.csv', 'w', newline='', encoding='utf-8') as csvfile:
+    fieldnames = ['dia', 'fecha', 'hora', 'hospital']
+    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+    writer.writeheader()
+    for cita in citas_para_csv:
+        writer.writerow(cita)
 
 # Ejecutar el proceso de ordenamiento
 # ordenar_citas()
