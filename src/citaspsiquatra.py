@@ -28,15 +28,10 @@ def obtener_citas(id_centros):
         'sec-ch-ua-platform': '"Windows"'
     }
     cookies = {
-        'AlteonP': 'BFHUJSRMHazpZi5btZFpXw$$',
-        '_pk_id.100.f94c': 'd2f479315072abc7.1748543534.1.1748543553.1748543534.',
-        'JSESSIONID': 'G4Yq8O2wth-eqnYGkKdmPC8pIvZ67d4HNicj-9gaau0V_vFCwoXd!-1403265650',
-        '_pk_ref..f94c': '%5B%22%22%2C%22%22%2C1748772122%2C%22https%3A%2F%2Fwww.comunidad.madrid%2F%22%5D',
-        '_pk_id..f94c': '7dfcc3445ed37b3b.1748237895.7.1748772122.1748768425.',
-        '_pk_ses..f94c': '*',
-        '_pk_ref.undefined.f94c': '%5B%22%22%2C%22%22%2C1748772122%2C%22https%3A%2F%2Fwww.comunidad.madrid%2F%22%5D',
-        '_pk_id.undefined.f94c': '7dfcc3445ed37b3b.1748237895.7.1748772122.1748768425.',
-        '_pk_ses.undefined.f94c': '*'
+        'AlteonP': 'BBlgCiRMHayRwMgffNBJOw$$',
+        '_pk_id..f94c': '70e1b159d6754ab2.1748707175.1.1748707175.1748707175.',
+        '_pk_id.undefined.f94c': '70e1b159d6754ab2.1748707175.1.1748707175.1748707175.',
+        'JSESSIONID': 'Ntoxnx1QfmhbtMG-jZQrIlu_BCeQd7-gvdJhbkLvqNCvVGLRNJi5!-1270097354'
     }
 
     resultados = []
